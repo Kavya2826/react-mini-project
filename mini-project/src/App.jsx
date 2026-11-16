@@ -65,6 +65,62 @@ function App() {
       .reduce((sum, item) => sum + item.amount, 0),
   })).filter((item) => item.total > 0).sort((a, b) => b.total - a.total)
 
+  const [selectedYear, selectedMonth] = month.split('-').map(Number)
+  const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate()
+  const now = new Date()
+  const isCurrentMonth = now.getFullYear() === selectedYear && now.getMonth() + 1 === selectedMonth
+  const isPastMonth = new Date(selectedYear, selectedMonth - 1, 1) < new Date(now.getFullYear(), now.getMonth(), 1)
+  const elapsedDays = isCurrentMonth ? now.getDate() : isPastMonth ? daysInMonth : 0
+  const previousMonthDate = new Date(selectedYear, selectedMonth - 2, 1)
+  const previousMonthKey = `${previousMonthDate.getFullYear()}-${String(previousMonthDate.getMonth() + 1).padStart(2, '0')}`
+  const previousMonthSpent = expenses
+    .filter((item) => item.date.startsWith(previousMonthKey))
+    .reduce((sum, item) => sum + item.amount, 0)
+  const monthChange = previousMonthSpent > 0
+    ? ((spent - previousMonthSpent) / previousMonthSpent) * 100
+    : null
+  const averageDailySpend = elapsedDays > 0 ? spent / elapsedDays : 0
+  const projectedSpend = elapsedDays > 0 ? averageDailySpend * daysInMonth : 0
+  const topCategory = categoryTotals[0]
+  const largestExpense = [...monthExpenses].sort((a, b) => b.amount - a.amount)[0]
+  const smallExpenses = monthExpenses.filter((item) => item.amount <= 200)
+  const smallExpenseTotal = smallExpenses.reduce((sum, item) => sum + item.amount, 0)
+  const budgetPaceMessage = elapsedDays === 0
+    ? 'Add expenses to see your spending pace.'
+    : projectedSpend > budget
+      ? `At this pace, you may exceed your budget by ${money(projectedSpend - budget)}.`
+      : `At this pace, you may finish ${money(budget - projectedSpend)} under budget.`
+  const insightCards = [
+    {
+      label: 'BIGGEST SPENDING CATEGORY',
+      value: topCategory ? topCategory.name : 'No spending yet',
+      detail: topCategory ? `${money(topCategory.total)} · ${Math.round(topCategory.total / (spent || 1) * 100)}% of your spending` : 'Your category insights will appear here.',
+      icon: topCategory?.icon || '◎',
+      tone: 'purple',
+    },
+    {
+      label: 'LARGEST SINGLE EXPENSE',
+      value: largestExpense ? money(largestExpense.amount) : '—',
+      detail: largestExpense ? largestExpense.title : 'No transactions recorded this month.',
+      icon: '↗',
+      tone: 'coral',
+    },
+    {
+      label: 'DAILY SPENDING AVERAGE',
+      value: elapsedDays ? money(averageDailySpend) : '—',
+      detail: elapsedDays ? `Based on ${elapsedDays} day${elapsedDays === 1 ? '' : 's'} of ${monthLabel}` : 'Available once the month begins.',
+      icon: '◷',
+      tone: 'blue',
+    },
+    {
+      label: 'SMALL EXPENSES (≤ ₹200)',
+      value: money(smallExpenseTotal),
+      detail: `${smallExpenses.length} transaction${smallExpenses.length === 1 ? '' : 's'} · the little things add up`,
+      icon: '✳',
+      tone: 'green',
+    },
+  ]
+
   const chartTotal = categoryTotals.reduce((sum, item) => sum + item.total, 0)
   let runningPercent = 0
   const chartGradient = categoryTotals.length
@@ -220,6 +276,33 @@ function App() {
               </div>
             </section>
           </div>
+          <section className="insights-summary" aria-labelledby="insights-summary-title">
+            <div className="insights-summary-heading">
+              <div><span className="section-kicker">A LITTLE FINANCIAL SELF-AWARENESS</span><h2 id="insights-summary-title">Your money, decoded.</h2><p>Useful patterns from your {monthLabel.toLowerCase()} activity. No judgement. Mostly.</p></div>
+              <span className="insight-spark">✦ INSIGHTS</span>
+            </div>
+            <div className="insight-cards">
+              {insightCards.map((item) => (
+                <article className="insight-card" key={item.label}>
+                  <div className={`insight-icon ${item.tone}`}>{item.icon}</div>
+                  <span className="insight-label">{item.label}</span>
+                  <strong className="insight-value">{item.value}</strong>
+                  <span className="insight-detail">{item.detail}</span>
+                </article>
+              ))}
+            </div>
+            <div className="insight-bottom-grid">
+              <article className="insight-note">
+                <div className="insight-note-icon">⌁</div>
+                <div><span className="insight-label">YOUR CURRENT SPENDING PACE</span><strong>{elapsedDays ? `${money(averageDailySpend)} per day` : 'Waiting for activity'}</strong><p>{budgetPaceMessage}</p></div>
+              </article>
+              <article className="insight-note comparison-note">
+                <div className="insight-note-icon">↗</div>
+                <div><span className="insight-label">MONTH-OVER-MONTH CHECK</span><strong>{monthChange === null ? 'Not enough history yet' : `${Math.abs(monthChange).toFixed(0)}% ${monthChange > 0 ? 'more' : monthChange < 0 ? 'less' : 'the same'} than last month`}</strong><p>{previousMonthSpent > 0 ? `You spent ${money(previousMonthSpent)} in ${previousMonthDate.toLocaleDateString('en-IN', { month: 'long' })}.` : 'Add expenses from the previous month to unlock this comparison.'}</p></div>
+              </article>
+            </div>
+            {topCategory && topCategory.total / (spent || 1) >= 0.5 && <p className="insight-callout"><span>✦</span> Heads up: {topCategory.name} accounts for {Math.round(topCategory.total / spent * 100)}% of your spending this month. That's your biggest lever if you want to cut back.</p>}
+          </section>
           <footer className="footer"><span>Made for the money-conscious (and the money-confused).</span><span> BROKE. <b>·</b> Keep your balance.</span></footer>
         </div>
       </main>
