@@ -127,6 +127,32 @@ h1 span { font-size: 24px; }
 .form-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .submit-button { width: 100%; margin-top: 5px; }
 .submit-button span { float: right; margin: 0; }
+
+/* Analytics insights */
+.insights-summary { margin-top: 18px; padding: 23px; border: 1px solid #2a2e38; border-radius: 12px; background: #191c24; }
+.insights-summary-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 19px; }
+.insights-summary-heading h2 { margin: 6px 0 5px; font: 700 19px 'Manrope', sans-serif; letter-spacing: -.6px; }
+.insights-summary-heading p { margin: 0; color: #858d9a; font-size: 11px; }
+.insight-spark { flex-shrink: 0; padding: 8px 11px; border: 1px solid #31594e; border-radius: 20px; color: #71dcb9; background: #20342f; font-size: 9px; font-weight: 700; letter-spacing: .8px; }
+.insight-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.insight-card { min-width: 0; min-height: 155px; padding: 15px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid #2d323d; border-radius: 10px; background: #1d212a; }
+.insight-icon { width: 29px; height: 29px; display: grid; place-items: center; margin-bottom: 13px; border-radius: 8px; font-size: 15px; }
+.insight-icon.purple { color: #c49bff; background: #c49bff1b; }
+.insight-icon.coral { color: #f08b9b; background: #f08b9b1b; }
+.insight-icon.blue { color: #7c9cff; background: #7c9cff1b; }
+.insight-icon.green { color: #55c7a8; background: #55c7a81b; }
+.insight-label { color: #828b99; font-size: 8px; font-weight: 700; letter-spacing: .9px; }
+.insight-value { max-width: 100%; margin-top: 7px; color: #edf0f4; font: 700 18px 'Manrope', sans-serif; overflow-wrap: anywhere; }
+.insight-detail { margin-top: 5px; color: #858d9a; font-size: 9px; line-height: 1.5; }
+.insight-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.insight-note { min-width: 0; display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1px solid #2d323d; border-radius: 10px; background: #1d212a; }
+.insight-note-icon { flex-shrink: 0; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: #20c997; background: #20c99719; font-size: 17px; }
+.comparison-note .insight-note-icon { color: #7c9cff; background: #7c9cff19; }
+.insight-note strong { display: block; margin-top: 6px; color: #e7eaf0; font: 600 13px 'Manrope', sans-serif; }
+.insight-note p { margin: 5px 0 0; color: #858d9a; font-size: 9px; line-height: 1.6; }
+.insight-callout { margin: 12px 0 0; padding: 12px 14px; border: 1px solid #594b36; border-radius: 8px; color: #c7b18f; background: #332b211c; font-size: 10px; line-height: 1.6; }
+.insight-callout span { color: #e7b36d; margin-right: 6px; }
+
 @media (max-width: 1050px) { .sidebar { width: 205px; } .page-content { padding-left: 3.5%; padding-right: 3.5%; } .topbar { padding-left: 3.5%; padding-right: 3.5%; } .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr); } }
-@media (max-width: 760px) { .sidebar { width: 65px; padding: 22px 9px; align-items: center; } .brand { margin: 0 0 45px; } .brand > span:last-child, .side-label, .nav-link:not(.active), .nav-link.active { font-size: 0; } .nav-link { width: 44px; height: 44px; justify-content: center; padding: 0; } .nav-link span { font-size: 19px; } .sidebar-bottom { display: none; } .topbar { height: 62px; } .today-label { display: none; } .page-content { padding-top: 28px; } .stats-grid { grid-template-columns: 1fr 1fr; } .balance-card { grid-column: span 2; } .content-grid { grid-template-columns: 1fr; } .insights-panel { order: -1; } .chart-wrap { padding: 17px 0; } }
-@media (max-width: 480px) { .sidebar { width: 54px; padding-inline: 5px; } .brand { margin-bottom: 35px; } .brand-mark { width: 30px; height: 30px; } .page-content { padding: 25px 15px 18px; } .topbar { padding-inline: 15px; } .welcome-row { align-items: start; flex-direction: column; } .welcome-row .primary-button { width: 100%; } .month-row { align-items: start; flex-direction: column; gap: 10px; } .stats-grid { gap: 9px; } .stat-card { padding: 14px 12px; } .stat-value { font-size: 21px; } .budget-panel, .panel { padding: 16px 13px; } .budget-copy h2 { font-size: 13px; } .footer { flex-direction: column; } .form-two { grid-template-columns: 1fr; } .transaction-row { gap: 8px; } .delete-button { opacity: 1; } }
+@media (max-width: 760px) { .insight-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .insight-bottom-grid { grid-template-columns: 1fr; } .sidebar { width: 65px; padding: 22px 9px; align-items: center; } .brand { margin: 0 0 45px; } .brand > span:last-child, .side-label, .nav-link:not(.active), .nav-link.active { font-size: 0; } .nav-link { width: 44px; height: 44px; justify-content: center; padding: 0; } .nav-link span { font-size: 19px; } .sidebar-bottom { display: none; } .topbar { height: 62px; } .today-label { display: none; } .page-content { padding-top: 28px; } .stats-grid { grid-template-columns: 1fr 1fr; } .balance-card { grid-column: span 2; } .content-grid { grid-template-columns: 1fr; } .insights-panel { order: -1; } .chart-wrap { padding: 17px 0; } }
+@media (max-width: 480px) { .insights-summary { padding: 16px 13px; } .insights-summary-heading h2 { font-size: 16px; } .insight-card { padding: 12px; } .insight-value { font-size: 16px; } .sidebar { width: 54px; padding-inline: 5px; } .brand { margin-bottom: 35px; } .brand-mark { width: 30px; height: 30px; } .page-content { padding: 25px 15px 18px; } .topbar { padding-inline: 15px; } .welcome-row { align-items: start; flex-direction: column; } .welcome-row .primary-button { width: 100%; } .month-row { align-items: start; flex-direction: column; gap: 10px; } .stats-grid { gap: 9px; } .stat-card { padding: 14px 12px; } .stat-value { font-size: 21px; } .budget-panel, .panel { padding: 16px 13px; } .budget-copy h2 { font-size: 13px; } .footer { flex-direction: column; } .form-two { grid-template-columns: 1fr; } .transaction-row { gap: 8px; } .delete-button { opacity: 1; } }
