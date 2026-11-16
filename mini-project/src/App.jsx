@@ -184,7 +184,7 @@ function App() {
   function exportCsv() {
     const headers = ['Title', 'Amount (INR)', 'Category', 'Date']
     const rows = visibleExpenses.map((item) => [item.title, item.amount, item.category, item.date])
-    const csvCell = (value) => `"${String(value).replaceAll('"', '""')} "`.replace(/" $/, '"')
+    const csvCell = (value) => `"${String(value).replaceAll('"', '""')}"`
     const csv = [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\\r\\n')
     const blob = new Blob([\\ufeff, csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
