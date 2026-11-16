@@ -1,16 +1,36 @@
-# React + Vite
+# BROKE. — Keep your balance 💸
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A dark, student-friendly expense tracker built with React and Vite. Track your monthly budget, record everyday spending, and see where your money goes.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Monthly budget you can edit
+- Add expenses with a title, amount, category, and date
+- Filter transactions by category
+- Delete transactions
+- Monthly spending progress and remaining balance
+- Category breakdown with a CSS donut chart
+- Persists expenses and budget in browser localStorage
+- Responsive layout for desktop and mobile
 
-## React Compiler
+## Run locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+cd mini-project
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open the local URL printed by Vite.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Build
+
+```bash
+npm run build
+```
+
+## Notes
+
+- Currency is displayed in Indian Rupees (INR).
+- Data is stored locally in the current browser. Clearing browser storage removes saved entries.
+- The dashboard starts with sample transactions so the charts and transaction list are visible on first launch. Delete them or add your own.
