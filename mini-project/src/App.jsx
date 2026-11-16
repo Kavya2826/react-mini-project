@@ -35,6 +35,9 @@ function App() {
   })
   const [budget, setBudget] = useState(() => Number(localStorage.getItem('broke-budget')) || 12000)
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortOrder, setSortOrder] = useState('newest')
   const [filter, setFilter] = useState('All')
   const [month, setMonth] = useState('2026-11')
   const [form, setForm] = useState({ title: '', amount: '', category: 'Food & Drinks', date: today() })
@@ -54,9 +57,18 @@ function App() {
   const spent = monthExpenses.reduce((total, item) => total + item.amount, 0)
   const remaining = budget - spent
   const percent = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0
-  const visibleExpenses = filter === 'All'
-    ? monthExpenses
-    : monthExpenses.filter((item) => item.category === filter)
+  const visibleExpenses = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase()
+    return monthExpenses
+      .filter((item) => filter === 'All' || item.category === filter)
+      .filter((item) => !normalizedSearch || item.title.toLowerCase().includes(normalizedSearch) || item.category.toLowerCase().includes(normalizedSearch))
+      .sort((a, b) => {
+        if (sortOrder === 'oldest') return a.date.localeCompare(b.date) || a.id - b.id
+        if (sortOrder === 'highest') return b.amount - a.amount
+        if (sortOrder === 'lowest') return a.amount - b.amount
+        return b.date.localeCompare(a.date) || b.id - a.id
+      })
+  }, [monthExpenses, filter, searchTerm, sortOrder])
 
   const categoryTotals = categories.map((category) => ({
     ...category,
@@ -135,17 +147,54 @@ function App() {
     }).join(', ')})`
     : 'conic-gradient(#292d36 0% 100%)'
 
+  function openAddExpense() {
+    setEditingId(null)
+    setForm({ title: '', amount: '', category: 'Food & Drinks', date: today() })
+    setShowForm(true)
+  }
+
+  function openEditExpense(item) {
+    setEditingId(item.id)
+    setForm({ title: item.title, amount: String(item.amount), category: item.category, date: item.date })
+    setShowForm(true)
+  }
+
   function addExpense(event) {
     event.preventDefault()
     const amount = Number(form.amount)
     if (!form.title.trim() || !Number.isFinite(amount) || amount <= 0 || !form.date) return
-    setExpenses((current) => [{ ...form, title: form.title.trim(), amount, id: Date.now() }, ...current])
+    if (editingId !== null) {
+      setExpenses((current) => current.map((item) => item.id === editingId
+        ? { ...item, ...form, title: form.title.trim(), amount }
+        : item))
+    } else {
+      setExpenses((current) => [{ ...form, title: form.title.trim(), amount, id: Date.now() }, ...current])
+    }
     setForm({ title: '', amount: '', category: 'Food & Drinks', date: today() })
+    setEditingId(null)
     setShowForm(false)
   }
 
   function deleteExpense(id) {
-    setExpenses((current) => current.filter((item) => item.id !== id))
+    const item = expenses.find((expense) => expense.id === id)
+    if (!item || !window.confirm(`Delete "${item.title}"? This cannot be undone.`)) return
+    setExpenses((current) => current.filter((expense) => expense.id !== id))
+  }
+
+  function exportCsv() {
+    const headers = ['Title', 'Amount (INR)', 'Category', 'Date']
+    const rows = visibleExpenses.map((item) => [item.title, item.amount, item.category, item.date])
+    const csvCell = (value) => `"${String(value).replaceAll('"', '""')} "`.replace(/" $/, '"')
+    const csv = [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\\r\\n')
+    const blob = new Blob([\\ufeff, csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `broke-transactions-${month}.csv`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
   }
 
 
@@ -192,7 +241,7 @@ function App() {
               <h1>Hey, wallet watcher <span>👋</span></h1>
               <p className="subheading">Here's what's happening with your money.</p>
             </div>
-            <button className="primary-button" onClick={() => setShowForm(true)}><span>＋</span> Add expense</button>
+            <button className="primary-button" onClick={openAddExpense}><span>＋</span> Add expense</button>
           </section>
 
           <section className="month-row">
@@ -236,6 +285,16 @@ function App() {
                 <div><span className="section-kicker">THE PAPER TRAIL</span><h2>Recent transactions</h2></div>
                 <button className="text-button" onClick={() => setFilter('All')}>View all <span>↗</span></button>
               </div>
+              <div className="transaction-tools">
+                <label className="transaction-search"><span>⌕</span><input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search transactions..." aria-label="Search transactions" /></label>
+                <select className="sort-select" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} aria-label="Sort transactions">
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="highest">Highest amount</option>
+                  <option value="lowest">Lowest amount</option>
+                </select>
+                <button className="export-button" onClick={exportCsv} disabled={!visibleExpenses.length}>↓ Export CSV</button>
+              </div>
               <div className="filter-row">
                 {['All', ...categories.map((item) => item.name)].map((item) => (
                   <button key={item} className={`filter-chip ${filter === item ? 'selected' : ''}`} onClick={() => setFilter(item)}>{item === 'All' ? 'All activity' : item}</button>
@@ -249,10 +308,13 @@ function App() {
                       <div className="transaction-icon" style={{ backgroundColor: `${category.color}20` }}>{category.icon}</div>
                       <div className="transaction-info"><strong>{item.title}</strong><span>{item.category} · {new Date(`${item.date}T12:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span></div>
                       <strong className="transaction-amount">−{money(item.amount)}</strong>
-                      <button className="delete-button" onClick={() => deleteExpense(item.id)} aria-label={`Delete ${item.title}`} title="Delete transaction">×</button>
+                      <div className="transaction-actions">
+                        <button className="edit-button" onClick={() => openEditExpense(item)} aria-label={`Edit ${item.title}`} title="Edit transaction">✎</button>
+                        <button className="delete-button" onClick={() => deleteExpense(item.id)} aria-label={`Delete ${item.title}`} title="Delete transaction">×</button>
+                      </div>
                     </div>
                   )
-                }) : <div className="empty-state"><span>🧾</span><strong>No expenses here. Yet.</strong><p>Add a transaction or choose another category.</p></div>}
+                }) : <div className="empty-state"><span>🧾</span><strong>{searchTerm ? 'No matching transactions.' : 'No expenses here. Yet.'}</strong><p>Try another search or category, or add a new expense.</p></div>}
               </div>
             </section>
 
@@ -309,9 +371,9 @@ function App() {
       </main>
 
       {showForm && (
-        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowForm(false) }}>
+        <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setShowForm(false); setEditingId(null) } }}>
           <section className="expense-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-            <div className="modal-heading"><div><span className="section-kicker">NEW TRANSACTION</span><h2 id="modal-title">Where did it go?</h2></div><button className="close-button" onClick={() => setShowForm(false)} aria-label="Close">×</button></div>
+            <div className="modal-heading"><div><span className="section-kicker">{editingId !== null ? 'UPDATE TRANSACTION' : 'NEW TRANSACTION'}</span><h2 id="modal-title">{editingId !== null ? 'Edit transaction' : 'Where did it go?'}</h2></div><button className="close-button" onClick={() => { setShowForm(false); setEditingId(null) }} aria-label="Close">×</button></div>
             <form onSubmit={addExpense}>
               <label>What did you spend on?<input autoFocus required maxLength="50" placeholder="e.g. Late night pizza" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>
               <label>How much? <span className="field-hint">INR ₹</span><input required type="number" min="1" step="1" placeholder="0" value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} /></label>
@@ -319,7 +381,7 @@ function App() {
                 <label>Category<select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>{categories.map((item) => <option key={item.name}>{item.name}</option>)}</select></label>
                 <label>Date<input required type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} /></label>
               </div>
-              <button className="primary-button submit-button" type="submit">Save expense <span>↗</span></button>
+              <button className="primary-button submit-button" type="submit">{editingId !== null ? 'Save changes' : 'Save expense'} <span>↗</span></button>
             </form>
           </section>
         </div>
