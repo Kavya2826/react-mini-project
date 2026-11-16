@@ -65,6 +65,10 @@ function App() {
       .reduce((sum, item) => sum + item.amount, 0),
   })).filter((item) => item.total > 0).sort((a, b) => b.total - a.total)
 
+  const monthLabel = new Date(`${month}-02T12:00:00`).toLocaleDateString('en-IN', {
+    month: 'long', year: 'numeric',
+  })
+
   const [selectedYear, selectedMonth] = month.split('-').map(Number)
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate()
   const now = new Date()
@@ -144,9 +148,6 @@ function App() {
     setExpenses((current) => current.filter((item) => item.id !== id))
   }
 
-  const monthLabel = new Date(`${month}-02T12:00:00`).toLocaleDateString('en-IN', {
-    month: 'long', year: 'numeric',
-  })
 
   return (
     <div className="app-shell">
